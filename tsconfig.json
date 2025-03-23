@@ -31,7 +31,13 @@
     "next.config.js",
     "src/components/UserFormTable.jsx",
     "src/components/course-form.tsx",
-    "src/app/page.jsx"
+    "src/app/page.jsx",
+    "src/app/dashboard/lecturer/new/page.jsx",
+    "src/app/dashboard/lecturer/page.jsx",
+    "src/app/dashboard/lecturer/new/[id]/page.jsx",
+    "src/components/lecturer-table.jsx",
+    "src/app/api/lecturers/route.jsx",
+    "src/app/dashboard/lecturer/edit/[id]/page.jsx"
   ],
   "exclude": ["node_modules"]
 }
