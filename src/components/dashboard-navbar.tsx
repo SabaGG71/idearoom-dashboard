@@ -53,14 +53,21 @@ export default function DashboardNavbar({
               className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
             >
               <BookOpen size={16} />
-              Blogs
+              ბლოგები
             </Link>
             <Link
               href="/dashboard/courses"
               className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
             >
               <GraduationCap size={16} />
-              Courses
+              კურსები
+            </Link>
+            <Link
+              href="/dashboard/lecturer"
+              className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
+            >
+              <GraduationCap size={16} />
+              ლექტორები
             </Link>
           </div>
         </div>
