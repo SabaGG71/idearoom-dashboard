@@ -39,6 +39,11 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const router = useRouter();
 
+  // Sync initial blogs with state
+  useEffect(() => {
+    setBlogs(initialBlogs);
+  }, [initialBlogs]);
+
   useEffect(() => {
     // Set up realtime subscription
     const channel = supabase
@@ -51,18 +56,22 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
           table: "blogs",
         },
         (payload) => {
-          if (payload.eventType === "INSERT") {
-            setBlogs((prev) => [payload.new as Blog, ...prev]);
-          } else if (payload.eventType === "UPDATE") {
-            setBlogs((prev) =>
-              prev.map((blog) =>
-                blog.id === payload.new.id ? (payload.new as Blog) : blog
-              )
-            );
-          } else if (payload.eventType === "DELETE") {
-            setBlogs((prev) =>
-              prev.filter((blog) => blog.id !== payload.old.id)
-            );
+          switch (payload.eventType) {
+            case "INSERT":
+              setBlogs((prev) => [payload.new as Blog, ...prev]);
+              break;
+            case "UPDATE":
+              setBlogs((prev) =>
+                prev.map((blog) =>
+                  blog.id === payload.new.id ? (payload.new as Blog) : blog
+                )
+              );
+              break;
+            case "DELETE":
+              setBlogs((prev) =>
+                prev.filter((blog) => blog.id !== payload.old.id)
+              );
+              break;
           }
         }
       )
@@ -71,7 +80,7 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, []);
 
   // Filter blogs based on search term
   const filteredBlogs = blogs.filter(
@@ -127,8 +136,6 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
         if (error) {
           console.error("Error deleting blog:", error);
           alert("Failed to delete blog post");
-        } else {
-          setBlogs(blogs.filter((blog) => blog.id !== id));
         }
       } finally {
         setIsDeleting(null);

@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { createClient } from "../../../../supabase/server";
-import { Blog } from "@/types/blog"; // Import the Blog type from your types directory
+import { supabase } from "../../../../supabase/client";
+import { Blog } from "@/types/blog";
 
 export default function BlogsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [user, setUser] = useState<any>(null);
 
   // Authentication check
   useEffect(() => {
@@ -35,11 +35,18 @@ export default function BlogsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const supabase = await createClient();
-        const { data: fetchedBlogs, error } = await supabase
+        // Option 1: Using server-side client
+        const supabaseClient = await createClient();
+        const { data: fetchedBlogs, error } = await supabaseClient
           .from("blogs")
           .select("*")
           .order("created_at", { ascending: false });
+
+        // Option 2: Using browser client (uncomment if needed)
+        // const { data: fetchedBlogs, error } = await supabase
+        //   .from("blogs")
+        //   .select("*")
+        //   .order("created_at", { ascending: false });
 
         if (error) {
           console.error("Error fetching blogs:", error);
@@ -50,6 +57,8 @@ export default function BlogsPage() {
       } catch (err) {
         console.error("Error fetching data:", err);
         setBlogs([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -69,7 +78,7 @@ export default function BlogsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex justify-center items-center h-screen">
         Loading...
       </div>
     );
@@ -78,20 +87,21 @@ export default function BlogsPage() {
   return (
     <>
       <DashboardNavbar handleLogOut={handleLogout} />
-      <main className="w-full">
-        <div className="container mx-auto px-4 py-8 flex flex-col gap-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Blog Management</h1>
-            <Link href="/dashboard/blogs/new">
-              <Button className="flex items-center gap-2">
-                <PlusCircle size={16} />
-                New Blog Post
-              </Button>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Blog Management</h1>
+          <Button asChild>
+            <Link
+              href="/dashboard/blogs/new"
+              className="flex items-center gap-2"
+            >
+              <PlusCircle size={16} />
+              New Blog Post
             </Link>
-          </div>
-          <BlogTable initialBlogs={blogs} />
+          </Button>
         </div>
-      </main>
+        <BlogTable initialBlogs={blogs} />
+      </div>
     </>
   );
 }
