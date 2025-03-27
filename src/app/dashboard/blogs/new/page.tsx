@@ -36,7 +36,7 @@ export default function NewBlogPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading...
+        იტვირთება...
       </div>
     );
   }
@@ -46,7 +46,7 @@ export default function NewBlogPage() {
       <DashboardNavbar handleLogOut={handleLogout} />
       <main className="w-full">
         <div className="container mx-auto px-4 py-8 flex flex-col gap-8">
-          <h1 className="text-3xl font-bold">Create New Blog Post</h1>
+          <h1 className="text-3xl font-bold">ახალი ბლოგის შექმნა</h1>
           <BlogForm />
         </div>
       </main>

@@ -3,29 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardNavbar from "@/components/dashboard-navbar";
-import CourseTable from "../../../components/course-table";
+import OfferedCourseTable from "../../../components/offered-course-table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { createClient } from "../../../../supabase/server";
+import { OfferedCourse } from "@/types/offered-course";
 
-// Define the Course interface to match what CourseTable expects
-export interface Course {
-  id: number;
-  created_at: string;
-  title?: string;
-  course_details?: string;
-  image?: string;
-  start_course?: string;
-  quantity_lessons?: number;
-  quantity_of_students?: number;
-  lesson_time?: number;
-}
-
-export default function CoursesPage() {
+export default function OffersPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [offeredCourses, setOfferedCourses] = useState<OfferedCourse[]>([]);
 
   // Authentication check
   useEffect(() => {
@@ -47,20 +35,20 @@ export default function CoursesPage() {
     const fetchData = async () => {
       try {
         const supabase = await createClient();
-        const { data: fetchedCourses, error } = await supabase
-          .from("courses")
+        const { data: fetchedOfferedCourses, error } = await supabase
+          .from("offered_course")
           .select("*")
           .order("created_at", { ascending: false });
 
         if (error) {
-          console.error("Error fetching courses:", error);
-          setCourses([]); // Set empty array on error
+          console.error("Error fetching offered courses:", error);
+          setOfferedCourses([]); // Set empty array on error
         } else {
-          setCourses(fetchedCourses || []);
+          setOfferedCourses(fetchedOfferedCourses || []);
         }
       } catch (err) {
         console.error("Error fetching data:", err);
-        setCourses([]);
+        setOfferedCourses([]);
       }
     };
 
@@ -92,15 +80,15 @@ export default function CoursesPage() {
       <main className="w-full">
         <div className="container mx-auto px-4 py-8 flex flex-col gap-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">კურსების მართვა</h1>
-            <Link href="/dashboard/courses/new">
+            <h1 className="text-3xl font-bold">შეთავაზებების მართვა</h1>
+            <Link href="/dashboard/offers/new">
               <Button className="flex items-center gap-2">
                 <PlusCircle size={16} />
-                ახალი კურსი
+                ახალი შეთავაზება
               </Button>
             </Link>
           </div>
-          <CourseTable initialCourses={courses} />
+          <OfferedCourseTable initialOfferedCourses={offeredCourses} />
         </div>
       </main>
     </>

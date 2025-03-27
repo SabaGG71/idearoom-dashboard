@@ -16,7 +16,7 @@ const createClientSupabase = () => {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase environment variables");
+    throw new Error("Supabase-ის გარემოს ცვლადები არ არის განსაზღვრული");
   }
 
   return createSupabaseClient(supabaseUrl, supabaseKey);
@@ -45,7 +45,7 @@ export default function LecturersPage() {
         setSupabase(createClientSupabase());
       }
     } catch (err) {
-      console.error("localStorage is not available:", err);
+      console.error("localStorage არ არის ხელმისაწვდომი:", err);
       router.replace("/");
     }
   }, [router]);
@@ -56,17 +56,17 @@ export default function LecturersPage() {
       if (!supabase) return;
 
       try {
-        console.log("Fetching lecturers data...");
+        console.log("ლექტორების მონაცემების მიღება...");
 
         const { data: fetchedLecturers, error: supabaseError } = await supabase
           .from("lecturers")
           .select("*")
           .order("created_at", { ascending: false });
 
-        console.log("Fetched data:", fetchedLecturers);
+        console.log("მიღებული მონაცემები:", fetchedLecturers);
 
         if (supabaseError) {
-          console.error("Error fetching lecturers:", supabaseError);
+          console.error("ლექტორების მიღების შეცდომა:", supabaseError);
           setError(supabaseError.message);
           setLecturers([]);
         } else {
@@ -74,7 +74,7 @@ export default function LecturersPage() {
           setError(null);
         }
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("მონაცემების მიღების შეცდომა:", err);
         setError(err.message);
         setLecturers([]);
       }
@@ -100,14 +100,14 @@ export default function LecturersPage() {
           table: "lecturers",
         },
         (payload) => {
-          console.log("Change received!", payload);
+          console.log("ცვლილება მიღებულია!", payload);
 
           // Handle different types of changes
           if (payload.eventType === "DELETE") {
             // Remove the deleted lecturer from the state
             setLecturers((prev) => prev.filter((l) => l.id !== payload.old.id));
             setDeleteMessage(
-              `Lecturer "${payload.old.name}" was deleted by an admin`
+              `ლექტორი "${payload.old.name}" წაიშალა ადმინისტრატორის მიერ`
             );
             setTimeout(() => setDeleteMessage(null), 3000);
           } else if (payload.eventType === "INSERT") {
@@ -134,7 +134,7 @@ export default function LecturersPage() {
       localStorage.removeItem("isAuthenticated");
       router.push("/");
     } catch (err) {
-      console.error("localStorage is not available:", err);
+      console.error("localStorage არ არის ხელმისაწვდომი:", err);
     }
   };
 
@@ -145,7 +145,7 @@ export default function LecturersPage() {
 
       // Optimistic UI update (remove from UI immediately)
       setLecturers((prev) => prev.filter((lecturer) => lecturer.id !== id));
-      setDeleteMessage(`Deleting lecturer "${name}"...`);
+      setDeleteMessage(`ლექტორის "${name}" წაშლა...`);
 
       const { error: deleteError } = await supabase
         .from("lecturers")
@@ -153,7 +153,7 @@ export default function LecturersPage() {
         .eq("id", id);
 
       if (deleteError) {
-        console.error("Error deleting lecturer:", deleteError);
+        console.error("ლექტორის წაშლის შეცდომა:", deleteError);
 
         // Rollback UI if there was an error
         const { data } = await supabase
@@ -167,13 +167,13 @@ export default function LecturersPage() {
         setDeleteMessage(null);
 
         toast({
-          title: "Error",
-          description: `Failed to delete lecturer: ${deleteError.message}`,
+          title: "შეცდომა",
+          description: `ლექტორის წაშლა ვერ მოხერხდა: ${deleteError.message}`,
           variant: "destructive",
         });
       } else {
         // Success notification
-        setDeleteMessage(`Lecturer "${name}" was successfully deleted`);
+        setDeleteMessage(`ლექტორი "${name}" წარმატებით წაიშალა`);
 
         // Clear the message after 3 seconds
         setTimeout(() => {
@@ -181,13 +181,13 @@ export default function LecturersPage() {
         }, 3000);
 
         toast({
-          title: "Success",
-          description: `Lecturer "${name}" successfully deleted`,
+          title: "წარმატება",
+          description: `ლექტორი "${name}" წარმატებით წაიშალა`,
           variant: "default",
         });
       }
     } catch (err) {
-      console.error("Error in delete operation:", err);
+      console.error("წაშლის ოპერაციის შეცდომა:", err);
       setError(err.message);
     }
   };
@@ -196,7 +196,7 @@ export default function LecturersPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        იტვირთება...
       </div>
     );
   }
@@ -206,11 +206,11 @@ export default function LecturersPage() {
       <DashboardNavbar onLogout={handleLogout} />
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Lecturer Management</h1>
+          <h1 className="text-2xl font-bold">ლექტორების მართვა</h1>
           <Link href="/dashboard/lecturer/new">
             <Button className="flex items-center gap-2">
               <PlusCircle size={16} />
-              New Lecturer
+              ლექტორის დამატება
             </Button>
           </Link>
         </div>
@@ -223,9 +223,9 @@ export default function LecturersPage() {
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <p className="font-bold">Error: {error}</p>
+            <p className="font-bold">შეცდომა: {error}</p>
             <p className="text-sm">
-              Check your Supabase configuration and connection.
+              შეამოწმეთ Supabase-ის კონფიგურაცია და კავშირი.
             </p>
           </div>
         )}
@@ -237,7 +237,7 @@ export default function LecturersPage() {
           />
         ) : (
           <div className="text-center p-8 bg-gray-50 rounded-lg">
-            No lecturers found. Add your first lecturer!
+            ლექტორები არ მოიძებნა. დაამატეთ თქვენი პირველი ლექტორი!
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Course } from "@/types/course"; // Keep your original import
+import { OfferedCourse } from "@/types/offered-course";
 import {
   Table,
   TableBody,
@@ -19,16 +19,18 @@ import {
   ArrowUpDown,
   Search,
   Plus,
-  Eye,
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabase/client";
 
-// Change the props type to use any to bypass type checking temporarily
-export default function CourseTable(props: { initialCourses: any[] }) {
-  const [courses, setCourses] = useState<any[]>(props.initialCourses || []);
+export default function OfferedCourseTable(props: {
+  initialOfferedCourses: any[];
+}) {
+  const [offeredCourses, setOfferedCourses] = useState<any[]>(
+    props.initialOfferedCourses || []
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<string>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -37,31 +39,31 @@ export default function CourseTable(props: { initialCourses: any[] }) {
 
   useEffect(() => {
     // Update courses when props change
-    setCourses(props.initialCourses || []);
-  }, [props.initialCourses]);
+    setOfferedCourses(props.initialOfferedCourses || []);
+  }, [props.initialOfferedCourses]);
 
   useEffect(() => {
     // Set up realtime subscription
     const channel = supabase
-      .channel("courses-changes")
+      .channel("offered-courses-changes")
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "courses",
+          table: "offered_course",
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setCourses((prev) => [payload.new as any, ...prev]);
+            setOfferedCourses((prev) => [payload.new as any, ...prev]);
           } else if (payload.eventType === "UPDATE") {
-            setCourses((prev) =>
+            setOfferedCourses((prev) =>
               prev.map((course) =>
                 course.id === payload.new.id ? (payload.new as any) : course
               )
             );
           } else if (payload.eventType === "DELETE") {
-            setCourses((prev) =>
+            setOfferedCourses((prev) =>
               prev.filter((course) => course.id !== payload.old.id)
             );
           }
@@ -75,11 +77,14 @@ export default function CourseTable(props: { initialCourses: any[] }) {
   }, []);
 
   // Filter courses based on search term
-  const filteredCourses = courses.filter(
+  const filteredCourses = offeredCourses.filter(
     (course) =>
       course.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (typeof course.course_details === "string" &&
-        course.course_details.toLowerCase().includes(searchTerm.toLowerCase()))
+      course.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (Array.isArray(course.course_category) &&
+        course.course_category.some((cat: string) =>
+          cat.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
   );
 
   // Sort courses
@@ -125,17 +130,21 @@ export default function CourseTable(props: { initialCourses: any[] }) {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm("დარწმუნებული ხართ, რომ გსურთ ამ კურსის წაშლა?")) {
+    if (confirm("დარწმუნებული ხართ, რომ გსურთ ამ შეთავაზების წაშლა?")) {
       setIsDeleting(id);
       try {
-        const { error } = await supabase.from("courses").delete().eq("id", id);
+        const response = await fetch(`/api/offered-courses/${id}`, {
+          method: "DELETE",
+        });
 
-        if (error) {
-          console.error("Error deleting course:", error);
-          alert("კურსის წაშლა ვერ მოხერხდა");
-        } else {
-          setCourses(courses.filter((course) => course.id !== id));
+        if (!response.ok) {
+          throw new Error("შეთავაზების წაშლა ვერ მოხერხდა");
         }
+
+        setOfferedCourses(offeredCourses.filter((course) => course.id !== id));
+      } catch (error) {
+        console.error("Error deleting offered course:", error);
+        alert("შეთავაზების წაშლა ვერ მოხერხდა");
       } finally {
         setIsDeleting(null);
       }
@@ -148,7 +157,7 @@ export default function CourseTable(props: { initialCourses: any[] }) {
         <div className="relative w-full sm:w-auto sm:flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="კურსების ძიება სათაურით, აღწერით..."
+            placeholder="მოძებნეთ სათაურით, აღწერით ან კატეგორიით..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 w-full"
@@ -164,9 +173,9 @@ export default function CourseTable(props: { initialCourses: any[] }) {
             <span className="hidden sm:inline">სორტირება</span>
           </Button>
           <Button asChild className="flex items-center gap-2 ml-auto sm:ml-2">
-            <Link href="/dashboard/courses/new">
+            <Link href="/dashboard/offers/new">
               <Plus size={16} />
-              <span className="hidden sm:inline">ახალი კურსი</span>
+              <span className="hidden sm:inline">ახალი შეთავაზება</span>
             </Link>
           </Button>
         </div>
@@ -204,12 +213,12 @@ export default function CourseTable(props: { initialCourses: any[] }) {
                     )}
                   </div>
                 </TableHead>
-                <TableHead>დეტალები</TableHead>
+                <TableHead>კატეგორია</TableHead>
                 <TableHead>სურათი</TableHead>
-                <TableHead>დაწყების თარიღი</TableHead>
+                <TableHead>ფასი</TableHead>
+                <TableHead>ფასდაკლება</TableHead>
+                <TableHead>ლექტორები</TableHead>
                 <TableHead>გაკვეთილები</TableHead>
-                <TableHead>სტუდენტები</TableHead>
-                <TableHead>ხანგრძლივობა</TableHead>
                 <TableHead className="text-right">მოქმედებები</TableHead>
               </TableRow>
             </TableHeader>
@@ -222,16 +231,16 @@ export default function CourseTable(props: { initialCourses: any[] }) {
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="h-8 w-8 text-muted-foreground/70" />
-                      <p>კურსები ვერ მოიძებნა</p>
+                      <p>შეთავაზებები ვერ მოიძებნა</p>
                       {searchTerm && (
                         <p className="text-sm text-muted-foreground">
                           შეცვალეთ საძიებო სიტყვა
                         </p>
                       )}
                       <Button asChild variant="outline" className="mt-2">
-                        <Link href="/dashboard/courses/new">
+                        <Link href="/dashboard/offers/new">
                           <Plus size={16} className="mr-2" />
-                          შექმენით პირველი კურსი
+                          შექმენით პირველი შეთავაზება
                         </Link>
                       </Button>
                     </div>
@@ -249,73 +258,61 @@ export default function CourseTable(props: { initialCourses: any[] }) {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
                       })}
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="max-w-[200px] truncate">
                       {course.title}
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {course.course_details}
+                    <TableCell>
+                      {Array.isArray(course.course_category)
+                        ? course.course_category.join(", ")
+                        : course.course_category}
                     </TableCell>
                     <TableCell>
                       {course.image ? (
-                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted border">
+                        <div className="h-10 w-10 relative rounded-md overflow-hidden">
                           <img
                             src={course.image}
                             alt={course.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "https://via.placeholder.com/100x100?text=Error";
-                            }}
+                            className="object-cover h-full w-full"
                           />
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">
-                          No image
-                        </span>
+                        <div className="h-10 w-10 bg-muted rounded-md flex items-center justify-center">
+                          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        </div>
                       )}
                     </TableCell>
-
-                    <TableCell>{course.start_course || "-"}</TableCell>
-                    <TableCell>{course.quantity_lessons || "-"}</TableCell>
-                    <TableCell>{course.quantity_of_students || "-"}</TableCell>
                     <TableCell>
-                      {course.lesson_time ? `${course.lesson_time} min` : "-"}
+                      {course.price ? `${course.price} ₾` : "N/A"}
                     </TableCell>
-
+                    <TableCell>
+                      {course.discount_percentage
+                        ? `${course.discount_percentage}%`
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      {Array.isArray(course.lecturers)
+                        ? course.lecturers.join(", ")
+                        : course.lecturers}
+                    </TableCell>
+                    <TableCell>{course.quantity_of_lessons || "N/A"}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          asChild
-                          className="h-8 w-8"
-                        >
-                          <Link href={`/dashboard/courses/edit/${course.id}`}>
-                            <Eye size={16} className="text-muted-foreground" />
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/dashboard/offers/edit/${course.id}`}>
+                            <Edit size={16} />
+                            <span className="sr-only">Edit</span>
                           </Link>
                         </Button>
                         <Button
-                          size="icon"
                           variant="ghost"
-                          asChild
-                          className="h-8 w-8"
-                        >
-                          <Link href={`/dashboard/courses/edit/${course.id}`}>
-                            <Edit size={16} className="text-blue-500" />
-                          </Link>
-                        </Button>
-                        <Button
                           size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive hover:text-destructive/80"
                           onClick={() => handleDelete(course.id)}
                           disabled={isDeleting === course.id}
                         >
                           <Trash2 size={16} />
+                          <span className="sr-only">Delete</span>
                         </Button>
                       </div>
                     </TableCell>

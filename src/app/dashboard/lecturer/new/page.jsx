@@ -18,7 +18,7 @@ const createClientSupabase = () => {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase environment variables");
+    throw new Error("Supabase-ის გარემოს ცვლადები არ არის განსაზღვრული");
   }
 
   return createSupabaseClient(supabaseUrl, supabaseKey);
@@ -53,7 +53,7 @@ export default function LecturerForm() {
         setLoading(false);
       }
     } catch (err) {
-      console.error("localStorage is not available:", err);
+      console.error("localStorage არ არის ხელმისაწვდომი:", err);
       router.replace("/");
     }
   }, [router]);
@@ -72,7 +72,7 @@ export default function LecturerForm() {
             .single();
 
           if (fetchError) {
-            console.error("Failed to fetch lecturer:", fetchError);
+            console.error("ლექტორის მიღება ვერ მოხერხდა:", fetchError);
             setError(fetchError.message);
           } else if (data) {
             setFormData({
@@ -87,7 +87,7 @@ export default function LecturerForm() {
             }
           }
         } catch (err) {
-          console.error("Error fetching lecturer:", err);
+          console.error("ლექტორის მიღების შეცდომა:", err);
           setError(err.message);
         }
       }
@@ -153,8 +153,8 @@ export default function LecturerForm() {
         lecturer_image: publicUrl,
       }));
     } catch (err) {
-      console.error("Error uploading image:", err);
-      setError(`Failed to upload image: ${err.message}`);
+      console.error("სურათის ატვირთვის შეცდომა:", err);
+      setError(`სურათის ატვირთვა ვერ მოხერხდა: ${err.message}`);
 
       // Keep the local preview for better UX even if upload failed
     } finally {
@@ -219,7 +219,7 @@ export default function LecturerForm() {
       // Success, redirect to lecturers page
       router.push("/dashboard/lecturer");
     } catch (err) {
-      console.error("Error saving lecturer:", err);
+      console.error("ლექტორის შენახვის შეცდომა:", err);
       setError(err.message);
     } finally {
       setSaving(false);
@@ -229,7 +229,7 @@ export default function LecturerForm() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p className="text-xl">Loading...</p>
+        <p className="text-xl">იტვირთება...</p>
       </div>
     );
   }
@@ -242,180 +242,133 @@ export default function LecturerForm() {
           <Link href="/dashboard/lecturer">
             <Button variant="ghost" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Back to Lecturers
+              ლექტორებთან დაბრუნება
             </Button>
           </Link>
         </div>
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold">
-            {isEditMode ? "Edit Lecturer" : "Add New Lecturer"}
+            {isEditMode ? "ლექტორის რედაქტირება" : "ახალი ლექტორის დამატება"}
           </h1>
         </div>
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <p>Error: {error}</p>
+            <p>{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-6">
-            <div className="grid gap-3">
-              <Label htmlFor="fullName">Full Name *</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">სრული სახელი</Label>
               <Input
                 id="fullName"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleInputChange}
-                placeholder="Enter lecturer's full name"
                 required
+                placeholder="შეიყვანეთ ლექტორის სრული სახელი"
               />
             </div>
 
-            <div className="grid gap-3">
-              <Label htmlFor="field">Field of Expertise</Label>
+            <div className="space-y-2">
+              <Label htmlFor="field">სფერო</Label>
               <Input
                 id="field"
                 name="field"
                 value={formData.field}
                 onChange={handleInputChange}
-                placeholder="E.g., Computer Science, Mathematics, Physics"
-              />
-            </div>
-
-            <div className="grid gap-3">
-              <Label>Profile Image</Label>
-
-              <div className="flex flex-col space-y-4">
-                {/* Image Preview Area */}
-                {previewUrl ? (
-                  <div className="relative rounded-lg border border-gray-200 bg-gray-50 p-2">
-                    <div className="group relative h-64 w-full overflow-hidden rounded-md">
-                      <img
-                        src={previewUrl}
-                        alt="Lecturer profile"
-                        className="h-full w-full object-contain"
-                        onError={(e) => {
-                          setError(
-                            "Failed to load image. Please check the URL."
-                          );
-                          e.currentTarget.src = "/placeholder-image.jpg";
-                        }}
-                      />
-
-                      {/* Overlay with actions */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleRemoveImage}
-                          className="rounded-full p-2"
-                        >
-                          <X className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="mt-2 flex items-center justify-between">
-                      <p className="text-sm text-gray-600 truncate max-w-xs">
-                        {formData.lecturer_image || "Uploaded image"}
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={triggerFileInput}
-                      >
-                        Replace
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:bg-gray-50 cursor-pointer"
-                    onClick={triggerFileInput}
-                  >
-                    <div className="mb-4 rounded-full bg-gray-100 p-4">
-                      <ImageIcon className="h-8 w-8 text-gray-500" />
-                    </div>
-                    <p className="mb-2 text-sm font-semibold text-gray-700">
-                      Click to upload an image
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      SVG, PNG, JPG or GIF (Max. 2MB)
-                    </p>
-                  </div>
-                )}
-
-                {/* Hidden file input */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-
-                {/* Manual URL input option */}
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center">
-                    <div className="flex-grow h-px bg-gray-200"></div>
-                    <span className="px-2 text-sm text-gray-500">
-                      Or enter image URL
-                    </span>
-                    <div className="flex-grow h-px bg-gray-200"></div>
-                  </div>
-
-                  <Input
-                    id="lecturer_image"
-                    name="lecturer_image"
-                    value={formData.lecturer_image}
-                    onChange={handleInputChange}
-                    placeholder="Enter image URL"
-                  />
-                </div>
-              </div>
-
-              {uploading && (
-                <div className="text-sm text-blue-600 flex items-center">
-                  <div className="h-4 w-4 mr-2 animate-spin">⏳</div>
-                  Uploading image...
-                </div>
-              )}
-            </div>
-
-            <div className="grid gap-3">
-              <Label htmlFor="lecturer_text">Biography</Label>
-              <Textarea
-                id="lecturer_text"
-                name="lecturer_text"
-                value={formData.lecturer_text}
-                onChange={handleInputChange}
-                placeholder="Enter lecturer's biography or description"
-                rows={6}
+                placeholder="მაგ. მათემატიკა, ფიზიკა და ა.შ."
               />
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              className="gap-2"
-              disabled={saving || uploading}
-            >
-              {saving ? (
-                <>
-                  <span className="h-4 w-4 animate-spin">⏳</span>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save Lecturer
-                </>
-              )}
+          <div className="space-y-2">
+            <Label htmlFor="lecturer_text">ლექტორის შესახებ</Label>
+            <Textarea
+              id="lecturer_text"
+              name="lecturer_text"
+              value={formData.lecturer_text}
+              onChange={handleInputChange}
+              placeholder="შეიყვანეთ ინფორმაცია ლექტორის შესახებ"
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>ლექტორის სურათი</Label>
+            <div className="flex gap-2">
+              <Input
+                name="lecturer_image"
+                value={formData.lecturer_image}
+                onChange={handleInputChange}
+                placeholder="შეიყვანეთ სურათის URL ან აირჩიეთ ფაილი"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={triggerFileInput}
+                disabled={uploading}
+                className="gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                {uploading ? "იტვირთება..." : "ატვირთვა"}
+              </Button>
+            </div>
+
+            {previewUrl && (
+              <div className="relative mt-4">
+                <div className="w-full max-w-xs h-40 rounded-md overflow-hidden bg-gray-100">
+                  <img
+                    src={previewUrl}
+                    alt="ლექტორის სურათის გადახედვა"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/150?text=Image+Error";
+                    }}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={handleRemoveImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {!previewUrl && (
+              <div className="w-full max-w-xs h-40 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 mt-4">
+                <div className="text-gray-500 flex flex-col items-center">
+                  <ImageIcon size={48} strokeWidth={1} />
+                  <span className="mt-2 text-sm">სურათი არ არის არჩეული</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-4 pt-4">
+            <Link href="/dashboard/lecturer">
+              <Button type="button" variant="outline">
+                გაუქმება
+              </Button>
+            </Link>
+            <Button type="submit" className="gap-2" disabled={saving}>
+              <Save className="h-4 w-4" />
+              {saving ? "ინახება..." : isEditMode ? "განახლება" : "შენახვა"}
             </Button>
           </div>
         </form>

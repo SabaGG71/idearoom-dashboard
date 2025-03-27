@@ -46,7 +46,7 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
           table: "lecturers",
         },
         (payload) => {
-          console.log("Change received!", payload);
+          console.log("ცვლილება მიღებულია!", payload);
 
           if (payload.eventType === "DELETE") {
             // Remove the deleted lecturer from the state
@@ -56,7 +56,7 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
             if (deleting !== payload.old.id) {
               showNotification({
                 type: "info",
-                message: `Lecturer was deleted by another admin`,
+                message: `ლექტორი წაშლილია სხვა ადმინისტრატორის მიერ`,
               });
             }
           } else if (payload.eventType === "INSERT") {
@@ -84,7 +84,7 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
   };
 
   const handleDelete = async (id, name) => {
-    if (confirm("Are you sure you want to delete this lecturer?")) {
+    if (confirm("დარწმუნებული ხართ, რომ გსურთ ამ ლექტორის წაშლა?")) {
       setDeleting(id);
 
       // Optimistic UI update
@@ -99,7 +99,7 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
           .eq("id", id);
 
         if (error) {
-          console.error("Error deleting lecturer:", error);
+          console.error("ლექტორის წაშლის შეცდომა:", error);
 
           // Rollback UI state on error
           setLecturers((prev) =>
@@ -110,16 +110,16 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
 
           showNotification({
             type: "error",
-            message: "Failed to delete lecturer. Please try again.",
+            message: "ლექტორის წაშლა ვერ მოხერხდა. გთხოვთ, სცადოთ ხელახლა.",
           });
         } else {
           showNotification({
             type: "success",
-            message: `Lecturer successfully deleted`,
+            message: `ლექტორი წარმატებით წაიშალა`,
           });
         }
       } catch (err) {
-        console.error("Error during delete operation:", err);
+        console.error("წაშლის ოპერაციის შეცდომა:", err);
 
         // Rollback UI state on error
         setLecturers((prev) =>
@@ -130,7 +130,7 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
 
         showNotification({
           type: "error",
-          message: "An error occurred. Please try again.",
+          message: "დაფიქსირდა შეცდომა. გთხოვთ, სცადოთ ხელახლა.",
         });
       } finally {
         setDeleting(null);
@@ -142,7 +142,7 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
     return (
       <div className="mt-10 text-center">
         <p className="text-lg text-gray-500">
-          No lecturers found. Add your first lecturer!
+          ლექტორები არ მოიძებნა. დაამატეთ თქვენი პირველი ლექტორი!
         </p>
       </div>
     );
@@ -173,11 +173,11 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Image</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Field</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>სურათი</TableHead>
+              <TableHead>სახელი</TableHead>
+              <TableHead>სფერო</TableHead>
+              <TableHead>შექმნილია</TableHead>
+              <TableHead className="text-right">მოქმედებები</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -188,7 +188,7 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
                     <div className="relative mt-24 h-12 w-12 overflow-hidden rounded-md">
                       <img
                         src={lecturer.lecturer_image}
-                        alt={lecturer.fullName || "Lecturer"}
+                        alt={lecturer.fullName || "ლექტორი"}
                         className="object-cover"
                       />
                     </div>
@@ -197,13 +197,13 @@ export default function LecturerTable({ lecturers: initialLecturers }) {
                   )}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {lecturer.fullName || "Unnamed"}
+                  {lecturer.fullName || "უსახელო"}
                 </TableCell>
-                <TableCell>{lecturer.field || "N/A"}</TableCell>
+                <TableCell>{lecturer.field || "არ არის"}</TableCell>
                 <TableCell>
                   {lecturer.created_at
                     ? new Date(lecturer.created_at).toLocaleDateString()
-                    : "N/A"}
+                    : "არ არის"}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end space-x-2">

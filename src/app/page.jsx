@@ -101,62 +101,87 @@ export default function Home() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+            <div className="relative">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 mb-1"
               >
-                ელფოსტა
+                ელ-ფოსტა
               </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Mail
-                    size={18}
-                    className="text-purple-400 group-focus-within:text-purple-600 transition-colors duration-200"
-                  />
-                </div>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-all duration-200"
+                  className="pl-10 block w-full rounded-lg border border-gray-300 py-3 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
                   placeholder="თქვენი ელფოსტა"
-                  required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                პაროლი
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Lock
-                    size={18}
-                    className="text-purple-400 group-focus-within:text-purple-600 transition-colors duration-200"
-                  />
-                </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  პაროლი
+                </label>
+              </div>
+              <div className="relative mt-1">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-all duration-200"
+                  className="pl-10 block w-full rounded-lg border border-gray-300 py-3 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-900"
                   placeholder="თქვენი პაროლი"
-                  required
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-purple-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? (
+                    <EyeOff
+                      className="h-5 w-5 text-gray-400 hover:text-gray-500"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Eye
+                      className="h-5 w-5 text-gray-400 hover:text-gray-500"
+                      aria-hidden="true"
+                    />
+                  )}
                 </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-700"
+                >
+                  დამიმახსოვრე
+                </label>
               </div>
             </div>
 

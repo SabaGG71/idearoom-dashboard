@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardNavbar from "@/components/dashboard-navbar";
-import CourseForm from "@/components/course-form";
+import OfferedCourseForm from "@/components/offered-course-form";
 
-export default function NewCoursePage() {
+export default function NewOfferedCoursePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
@@ -46,8 +46,8 @@ export default function NewCoursePage() {
       <DashboardNavbar handleLogOut={handleLogout} />
       <main className="w-full">
         <div className="container mx-auto px-4 py-8 flex flex-col gap-8">
-          <h1 className="text-3xl font-bold">ახალი კურსის შექმნა</h1>
-          <CourseForm />
+          <h1 className="text-3xl font-bold">ახალი შეთავაზების შექმნა</h1>
+          <OfferedCourseForm />
         </div>
       </main>
     </>

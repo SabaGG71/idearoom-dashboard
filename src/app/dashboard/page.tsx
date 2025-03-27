@@ -7,8 +7,8 @@ import {
   InfoIcon,
   BookOpen,
   Users,
-  BarChart3,
-  Clock,
+  Layers,
+  GraduationCap,
   ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +39,8 @@ export default function Dashboard() {
   const [blogCount, setBlogCount] = useState(0);
   const [usersFormData, setUsersFormData] = useState<UserForm[]>([]);
   const [usersFormCount, setUsersFormCount] = useState(0);
+  const [offeredCoursesCount, setOfferedCoursesCount] = useState(0);
+  const [coursesCount, setCoursesCount] = useState(0);
 
   // Authentication check
   useEffect(() => {
@@ -67,6 +69,18 @@ export default function Dashboard() {
           .from("blogs")
           .select("*", { count: "exact", head: true });
         setBlogCount(fetchedBlogCount || 0);
+
+        // Get offered courses count
+        const { count: fetchedOfferedCoursesCount } = await supabase
+          .from("offered_course")
+          .select("*", { count: "exact", head: true });
+        setOfferedCoursesCount(fetchedOfferedCoursesCount || 0);
+
+        // Get courses count
+        const { count: fetchedCoursesCount } = await supabase
+          .from("courses")
+          .select("*", { count: "exact", head: true });
+        setCoursesCount(fetchedCoursesCount || 0);
 
         // Get users_form data and count
         const { data: fetchedUsersFormData, error } = await supabase
@@ -118,13 +132,13 @@ export default function Dashboard() {
           {/* Header Section */}
           <header className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <h1 className="text-3xl font-bold">მთავარი პანელი</h1>
               <Button asChild>
                 <Link
                   href="/dashboard/blogs/new"
                   className="flex items-center gap-2"
                 >
-                  <span>New Blog Post</span>
+                  <span>ახალი ბლოგის დამატება</span>
                   <ArrowUpRight size={16} />
                 </Link>
               </Button>
@@ -132,8 +146,8 @@ export default function Dashboard() {
             <div className="bg-blue-50 dark:bg-blue-950/30 text-sm p-3 px-4 rounded-lg text-blue-600 dark:text-blue-400 flex gap-2 items-center border border-blue-100 dark:border-blue-900">
               <InfoIcon size="14" />
               <span>
-                Welcome to your dashboard! Manage your blog content and user
-                information here.
+                მოგესალმებით სამართავ პანელზე! აქ შეგიძლიათ მართოთ კურსები,
+                შეთავაზებები და ბლოგები.
               </span>
             </div>
           </header>
@@ -175,14 +189,16 @@ export default function Dashboard() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Analytics
+                  შეთავაზებები
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <div className="text-3xl font-bold">--</div>
+                  <div className="text-3xl font-bold">
+                    {offeredCoursesCount}
+                  </div>
                   <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-                    <BarChart3 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <Layers className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </CardContent>
@@ -191,14 +207,14 @@ export default function Dashboard() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Recent Activity
+                  კურსები
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <div className="text-3xl font-bold">--</div>
+                  <div className="text-3xl font-bold">{coursesCount}</div>
                   <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-full">
-                    <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    <GraduationCap className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
                 </div>
               </CardContent>
@@ -208,57 +224,43 @@ export default function Dashboard() {
           {/* User Form Data Section */}
           <section className="bg-card rounded-xl p-6 border shadow-sm">
             <h2 className="font-semibold text-xl mb-4">
-              User Form Submissions
+              მომხმარებლების მოთხოვნები
             </h2>
             {usersFormData.length > 0 ? (
               <UserFormTable usersFormData={usersFormData} />
             ) : (
               <div className="text-center p-8 text-muted-foreground">
-                No form submissions found
+                მომხმარებლების მოთხოვნები არ მოიძებნა
               </div>
             )}
           </section>
 
           {/* Quick Links */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="hover:shadow-md transition-shadow">
               <CardHeader>
-                <CardTitle>Manage Blog Posts</CardTitle>
+                <CardTitle>შეთავაზებების მართვა</CardTitle>
                 <CardDescription>
-                  View, edit, and delete your blog content
+                  დაამატეთ, შეცვალეთ ან წაშალეთ შეთავაზებები
                 </CardDescription>
               </CardHeader>
               <CardFooter>
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/dashboard/blogs">Go to Blog Management</Link>
+                  <Link href="/dashboard/offers">შეთავაზებების მართვა</Link>
                 </Button>
               </CardFooter>
             </Card>
 
             <Card className="hover:shadow-md transition-shadow">
               <CardHeader>
-                <CardTitle>Create New Post</CardTitle>
+                <CardTitle>კურსების მართვა</CardTitle>
                 <CardDescription>
-                  Add a new blog post to your collection
+                  დაამატეთ, შეცვალეთ ან წაშალეთ კურსები
                 </CardDescription>
               </CardHeader>
               <CardFooter>
                 <Button asChild className="w-full">
-                  <Link href="/dashboard/blogs/new">Create New Post</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle>View Website</CardTitle>
-                <CardDescription>
-                  See how your blog looks to visitors
-                </CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/">Go to Website</Link>
+                  <Link href="/dashboard/courses">კურსების მართვა</Link>
                 </Button>
               </CardFooter>
             </Card>

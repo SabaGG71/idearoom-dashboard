@@ -8,8 +8,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BlogDash - Blog Management Dashboard",
-  description: "A comprehensive admin dashboard for managing blog content",
+  title: "Idearoom Admin",
+  description: "idearoom admin dashboard",
 };
 
 export default function RootLayout({

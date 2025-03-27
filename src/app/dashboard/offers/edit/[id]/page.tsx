@@ -3,14 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardNavbar from "@/components/dashboard-navbar";
-import CourseForm from "@/components/course-form";
-import { Course } from "@/components/course-form";
+import OfferedCourseForm from "@/components/offered-course-form";
+import { OfferedCourse } from "@/types/offered-course";
 import { createClient } from "../../../../../../supabase/server";
 
-export default function EditCoursePage({ params }: { params: { id: string } }) {
+export default function EditOfferedCoursePage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [course, setCourse] = useState<Course | null>(null);
+  const [course, setCourse] = useState<OfferedCourse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Authentication check and course data fetching
@@ -23,22 +27,28 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           return;
         }
 
-        // Fetch the course
+        // Fetch the offered course
         const supabase = await createClient();
         const { data: courseData, error: fetchError } = await supabase
-          .from("courses")
+          .from("offered_course")
           .select("*")
           .eq("id", parseInt(params.id, 10))
           .maybeSingle();
 
-        if (fetchError || !courseData) {
-          console.error(
-            "Error fetching course or course not found:",
-            fetchError
-          );
-          setError("კურსი ვერ მოიძებნა");
+        if (fetchError) {
+          console.error("Error fetching offered course:", fetchError);
+          setError("შეთავაზების მონაცემების მიღება ვერ მოხერხდა");
           setTimeout(() => {
-            router.replace("/dashboard/courses");
+            router.replace("/dashboard/offers");
+          }, 2000);
+          return;
+        }
+
+        if (!courseData) {
+          console.error("Offered course not found");
+          setError("შეთავაზება ვერ მოიძებნა");
+          setTimeout(() => {
+            router.replace("/dashboard/offers");
           }, 2000);
           return;
         }
@@ -77,7 +87,9 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">შეცდომა</h2>
           <p className="text-muted-foreground">{error}</p>
-          <p className="text-sm mt-4">გადამისამართდება კურსების გვერდზე...</p>
+          <p className="text-sm mt-4">
+            გადამისამართდება შეთავაზებების გვერდზე...
+          </p>
         </div>
       </div>
     );
@@ -88,8 +100,8 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       <DashboardNavbar handleLogOut={handleLogout} />
       <main className="w-full">
         <div className="container mx-auto px-4 py-8 flex flex-col gap-8">
-          <h1 className="text-3xl font-bold">კურსის რედაქტირება</h1>
-          {course && <CourseForm course={course} />}
+          <h1 className="text-3xl font-bold">შეთავაზების რედაქტირება</h1>
+          {course && <OfferedCourseForm course={course} />}
         </div>
       </main>
     </>

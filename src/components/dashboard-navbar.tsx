@@ -35,39 +35,38 @@ export default function DashboardNavbar({
             prefetch
             className="text-xl font-bold flex items-center gap-2"
           >
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 font-bold">
-              BlogDash
-            </span>
+            <span className="text-purple-600">Idearoom</span>
           </Link>
           <div className="flex gap-4 ml-8">
             <Link
               href="/dashboard"
               className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
             >
-              <LayoutDashboard size={16} />
-              Dashboard
+              მთავარი
             </Link>
             <Link
               href="/dashboard/blogs"
               className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
             >
-              <BookOpen size={16} />
               ბლოგები
             </Link>
             <Link
               href="/dashboard/courses"
               className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
             >
-              <GraduationCap size={16} />
               კურსები
             </Link>
             <Link
               href="/dashboard/lecturer"
               className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
             >
-              <GraduationCap size={16} />
               ლექტორები
+            </Link>
+            <Link
+              href="/dashboard/offers"
+              className="text-sm font-medium hover:text-primary flex items-center gap-1 transition-colors"
+            >
+              შეთავაზებები
             </Link>
           </div>
         </div>
@@ -84,18 +83,20 @@ export default function DashboardNavbar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5 text-sm font-medium">My Account</div>
+              <div className="px-2 py-1.5 text-sm font-medium">
+                ჩემი ანგარიში
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span>პარამეტრები</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer text-destructive focus:text-destructive"
                 onClick={handleLogOut}
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
+                <span>გასვლა</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

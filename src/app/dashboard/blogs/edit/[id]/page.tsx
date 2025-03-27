@@ -23,7 +23,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
           return;
         }
 
-        // Fetch the blog post
+        // Fetch the blog
         const supabase = await createClient();
         const { data: blogData, error: fetchError } = await supabase
           .from("blogs")
@@ -33,7 +33,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
 
         if (fetchError || !blogData) {
           console.error("Error fetching blog or blog not found:", fetchError);
-          setError("Blog post not found");
+          setError("ბლოგი ვერ მოიძებნა");
           setTimeout(() => {
             router.replace("/dashboard/blogs");
           }, 2000);
@@ -63,7 +63,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading...
+        იტვირთება...
       </div>
     );
   }
@@ -72,9 +72,9 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Error</h2>
+          <h2 className="text-xl font-semibold mb-2">შეცდომა</h2>
           <p className="text-muted-foreground">{error}</p>
-          <p className="text-sm mt-4">Redirecting to blogs page...</p>
+          <p className="text-sm mt-4">გადამისამართდება ბლოგების გვერდზე...</p>
         </div>
       </div>
     );
@@ -85,7 +85,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
       <DashboardNavbar handleLogOut={handleLogout} />
       <main className="w-full">
         <div className="container mx-auto px-4 py-8 flex flex-col gap-8">
-          <h1 className="text-3xl font-bold">Edit Blog Post</h1>
+          <h1 className="text-3xl font-bold">ბლოგის რედაქტირება</h1>
           {blog && <BlogForm blog={blog} />}
         </div>
       </main>

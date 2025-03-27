@@ -154,39 +154,39 @@ export default function BlogForm({ blog }: BlogFormProps) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">სათაური</Label>
             <Input
               id="title"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              placeholder="Enter blog title"
+              placeholder="შეიყვანეთ ბლოგის სათაური"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="text">Content</Label>
+            <Label htmlFor="text">შინაარსი</Label>
             <Textarea
               id="text"
               name="text"
               value={formData.text}
               onChange={handleChange}
-              placeholder="Enter blog content"
+              placeholder="შეიყვანეთ ბლოგის შინაარსი"
               rows={8}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">Blog Image</Label>
+            <Label htmlFor="image">ბლოგის სურათი</Label>
             <div className="flex gap-2">
               <Input
                 id="image"
                 name="image"
                 value={formData.image || ""}
                 onChange={handleChange}
-                placeholder="Enter image URL (optional)"
+                placeholder="შეიყვანეთ სურათის URL (არჩევითი)"
               />
               <input
                 type="file"
@@ -203,7 +203,7 @@ export default function BlogForm({ blog }: BlogFormProps) {
                 className="flex items-center gap-2"
               >
                 <Upload size={16} />
-                Upload
+                ატვირთვა
               </Button>
             </div>
 
@@ -216,7 +216,7 @@ export default function BlogForm({ blog }: BlogFormProps) {
                   ></div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Uploading: {uploadProgress}%
+                  იტვირთება: {uploadProgress}%
                 </p>
               </div>
             )}
@@ -225,7 +225,7 @@ export default function BlogForm({ blog }: BlogFormProps) {
               <div className="mt-2 w-full max-w-xs h-40 rounded-md overflow-hidden bg-muted relative group">
                 <img
                   src={formData.image}
-                  alt="Preview"
+                  alt="წინასწარი ხედი"
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
@@ -242,20 +242,20 @@ export default function BlogForm({ blog }: BlogFormProps) {
               <div className="mt-2 w-full max-w-xs h-40 rounded-md overflow-hidden bg-muted flex items-center justify-center">
                 <div className="text-muted-foreground flex flex-col items-center">
                   <ImageIcon size={40} strokeWidth={1} />
-                  <span className="text-sm mt-2">No image selected</span>
+                  <span className="text-sm mt-2">სურათი არ არის არჩეული</span>
                 </div>
               </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tags">Tags</Label>
+            <Label htmlFor="tags">ტეგები</Label>
             <div className="flex gap-2">
               <Input
                 id="tagInput"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                placeholder="Add a tag"
+                placeholder="დაამატეთ ტეგი"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -264,7 +264,7 @@ export default function BlogForm({ blog }: BlogFormProps) {
                 }}
               />
               <Button type="button" onClick={handleAddTag} variant="secondary">
-                Add
+                დამატება
               </Button>
             </div>
             {formData.tags && formData.tags.length > 0 && (
@@ -291,17 +291,17 @@ export default function BlogForm({ blog }: BlogFormProps) {
           <div className="flex gap-4 pt-4">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
-                ? "Saving..."
+                ? "ინახება..."
                 : blog
-                  ? "Update Blog Post"
-                  : "Create Blog Post"}
+                  ? "ბლოგის განახლება"
+                  : "ბლოგის შექმნა"}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push("/dashboard/blogs")}
             >
-              Cancel
+              გაუქმება
             </Button>
           </div>
         </form>

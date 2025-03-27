@@ -26,6 +26,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface BlogTableProps {
   initialBlogs: Blog[];
@@ -128,15 +129,40 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this blog post?")) {
+    if (confirm("დარწმუნებული ხართ, რომ გსურთ ამ ბლოგის წაშლა?")) {
       setIsDeleting(id);
       try {
+        // Optimistic UI update
+        const blogToDelete = blogs.find((blog) => blog.id === id);
+        setBlogs((prev) => prev.filter((blog) => blog.id !== id));
+
         const { error } = await supabase.from("blogs").delete().eq("id", id);
 
         if (error) {
-          console.error("Error deleting blog:", error);
-          alert("Failed to delete blog post");
+          console.error("ბლოგის წაშლის შეცდომა:", error);
+          // აღვადგინოთ წაშლილი ბლოგი თუ შეცდომა დაფიქსირდა
+          if (blogToDelete) {
+            setBlogs((prev) => [...prev, blogToDelete]);
+          }
+          toast({
+            title: "შეცდომა",
+            description: "ბლოგის წაშლა ვერ მოხერხდა",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "წარმატება",
+            description: "ბლოგი წარმატებით წაიშალა",
+          });
+          router.refresh();
         }
+      } catch (err) {
+        console.error("ბლოგის წაშლის შეცდომა:", err);
+        toast({
+          title: "შეცდომა",
+          description: "ბლოგის წაშლისას დაფიქსირდა შეცდომა",
+          variant: "destructive",
+        });
       } finally {
         setIsDeleting(null);
       }
@@ -149,25 +175,17 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
         <div className="relative w-full sm:w-auto sm:flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search blogs by title, content or tags..."
+            placeholder="მოძებნეთ ბლოგები სათაურით, შინაარსით ან ტეგებით..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 w-full"
           />
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button variant="outline" className="flex items-center gap-2">
-            <Filter size={16} />
-            <span className="hidden sm:inline">Filter</span>
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2">
-            <ArrowUpDown size={16} />
-            <span className="hidden sm:inline">Sort</span>
-          </Button>
-          <Button asChild className="flex items-center gap-2 ml-auto sm:ml-2">
+        <div className="flex w-full sm:w-auto">
+          <Button asChild className="flex items-center gap-2 ml-auto">
             <Link href="/dashboard/blogs/new">
               <Plus size={16} />
-              <span className="hidden sm:inline">New Post</span>
+              <span className="hidden sm:inline">ბლოგის დამატება</span>
             </Link>
           </Button>
         </div>
@@ -177,7 +195,7 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-muted/50 hover:bg-muted/70">
                 <TableHead
                   className="w-[80px]"
                   onClick={() => handleSort("id")}
@@ -191,7 +209,7 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
                 </TableHead>
                 <TableHead onClick={() => handleSort("created_at")}>
                   <div className="flex items-center cursor-pointer hover:text-primary transition-colors">
-                    Created At
+                    შექმნის თარიღი
                     {sortField === "created_at" && (
                       <ArrowUpDown size={16} className="ml-1" />
                     )}
@@ -199,16 +217,16 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
                 </TableHead>
                 <TableHead onClick={() => handleSort("title")}>
                   <div className="flex items-center cursor-pointer hover:text-primary transition-colors">
-                    Title
+                    სათაური
                     {sortField === "title" && (
                       <ArrowUpDown size={16} className="ml-1" />
                     )}
                   </div>
                 </TableHead>
-                <TableHead>Content</TableHead>
-                <TableHead>Image</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>შინაარსი</TableHead>
+                <TableHead>სურათი</TableHead>
+                <TableHead>ტეგები</TableHead>
+                <TableHead className="text-right">მოქმედებები</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -220,16 +238,16 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="h-8 w-8 text-muted-foreground/70" />
-                      <p>No blog posts found</p>
+                      <p>ბლოგები არ მოიძებნა</p>
                       {searchTerm && (
                         <p className="text-sm text-muted-foreground">
-                          Try adjusting your search term
+                          შეცვალეთ საძიებო სიტყვა
                         </p>
                       )}
                       <Button asChild variant="outline" className="mt-2">
                         <Link href="/dashboard/blogs/new">
                           <Plus size={16} className="mr-2" />
-                          Create your first post
+                          შექმენით პირველი ბლოგი
                         </Link>
                       </Button>
                     </div>
@@ -251,77 +269,76 @@ export default function BlogTable({ initialBlogs }: BlogTableProps) {
                         minute: "2-digit",
                       })}
                     </TableCell>
-                    <TableCell className="font-medium">{blog.title}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {blog.text}
+                    <TableCell>
+                      <div className="max-w-[220px] truncate font-medium">
+                        {blog.title}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-[220px] truncate text-sm text-muted-foreground">
+                        {blog.text}
+                      </div>
                     </TableCell>
                     <TableCell>
                       {blog.image ? (
-                        <div className="w-12 h-12 rounded-md overflow-hidden bg-muted border">
+                        <div className="relative h-10 w-10 overflow-hidden rounded">
                           <img
                             src={blog.image}
                             alt={blog.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "https://via.placeholder.com/100x100?text=Error";
-                            }}
+                            className="object-cover h-full w-full"
                           />
                         </div>
                       ) : (
                         <span className="text-muted-foreground text-sm">
-                          No image
+                          არ არის
                         </span>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {blog.tags?.map((tag, index) => (
-                          <Badge
-                            key={index}
-                            variant="secondary"
-                            className="font-normal"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                        {(!blog.tags || blog.tags.length === 0) && (
+                        {blog.tags && blog.tags.length > 0 ? (
+                          blog.tags.map((tag, index) => (
+                            <Badge
+                              key={`${blog.id}-${index}`}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {tag}
+                            </Badge>
+                          ))
+                        ) : (
                           <span className="text-muted-foreground text-sm">
-                            No tags
+                            არ არის
                           </span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-3 opacity-70 group-hover:opacity-100 transition-opacity">
                         <Button
-                          size="icon"
-                          variant="ghost"
+                          variant="outline"
+                          size="sm"
                           asChild
-                          className="h-8 w-8"
+                          title="რედაქტირება"
+                          className="h-8 w-8 p-0 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
                         >
                           <Link href={`/dashboard/blogs/edit/${blog.id}`}>
-                            <Eye size={16} className="text-muted-foreground" />
+                            <Edit className="h-4 w-4" />
                           </Link>
                         </Button>
                         <Button
-                          size="icon"
-                          variant="ghost"
-                          asChild
-                          className="h-8 w-8"
-                        >
-                          <Link href={`/dashboard/blogs/edit/${blog.id}`}>
-                            <Edit size={16} className="text-blue-500" />
-                          </Link>
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive hover:text-destructive/80"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0 rounded-md border-muted-foreground/20 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
                           onClick={() => handleDelete(blog.id)}
                           disabled={isDeleting === blog.id}
+                          title="წაშლა"
                         >
-                          <Trash2 size={16} />
+                          {isDeleting === blog.id ? (
+                            <div className="h-4 w-4 animate-spin">⏳</div>
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </TableCell>

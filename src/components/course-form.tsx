@@ -19,7 +19,6 @@ export interface Course {
   image: string;
   image_file_path: string;
   courseIcon: string;
-  courseIcon_file_path: string;
   start_course: string;
   quantity_lessons: number;
   quantity_of_students: string;
@@ -59,7 +58,6 @@ export default function CourseForm({ course }: CourseFormProps) {
     image: course?.image || "",
     image_file_path: course?.image_file_path || "",
     courseIcon: course?.courseIcon || "",
-    courseIcon_file_path: course?.courseIcon_file_path || "",
     start_course: course?.start_course || "",
     quantity_lessons: course?.quantity_lessons || 0,
     quantity_of_students: course?.quantity_of_students || "",
@@ -263,7 +261,6 @@ export default function CourseForm({ course }: CourseFormProps) {
         setFormData((prev) => ({
           ...prev,
           courseIcon: publicUrl,
-          courseIcon_file_path: filePath,
         }));
       }
 
@@ -311,49 +308,36 @@ export default function CourseForm({ course }: CourseFormProps) {
     setError(null);
 
     try {
-      // Remove file path properties from submission
-      const { image_file_path, courseIcon_file_path, ...dataToSubmit } = {
+      // Prepare data for submission
+      const dataToSubmit = {
         ...formData,
+        // Remove file path properties from submission
+        image_file_path: undefined,
+
+        // Clean course details: remove empty strings
+        course_details: formData.course_details.filter(
+          (detail) => detail.trim() !== ""
+        ),
+
+        // Clean syllabus titles
+        syllabus_title: formData.syllabus_title.filter(
+          (title) => title.trim() !== ""
+        ),
+
+        // Clean syllabus content
+        syllabus_content: formData.syllabus_content
+          .map((contentArray) =>
+            contentArray.filter((content) => content.trim() !== "")
+          )
+          .filter((contentArray) => contentArray.length > 0),
       };
 
-      // Clean course_details: remove empty strings
-      dataToSubmit.course_details = dataToSubmit.course_details.filter(
-        (detail) => detail.trim() !== ""
-      );
-
-      // Clean syllabus titles and content
-      dataToSubmit.syllabus_title = dataToSubmit.syllabus_title.filter(
-        (title) => title.trim() !== ""
-      );
-
-      for (let i = 0; i < dataToSubmit.syllabus_content.length; i++) {
-        if (dataToSubmit.syllabus_content[i]) {
-          dataToSubmit.syllabus_content[i] = dataToSubmit.syllabus_content[
-            i
-          ].filter((content) => content.trim() !== "");
-        }
-      }
-      dataToSubmit.syllabus_content = dataToSubmit.syllabus_content.filter(
-        (contentArray) => contentArray && contentArray.length > 0
-      );
-
-      // Ensure syllabus_content length does not exceed syllabus_title length
-      if (
-        dataToSubmit.syllabus_content.length >
-        dataToSubmit.syllabus_title.length
-      ) {
-        dataToSubmit.syllabus_content = dataToSubmit.syllabus_content.slice(
-          0,
-          dataToSubmit.syllabus_title.length
-        );
-      }
-
-      if (course) {
+      if (course && course.id) {
         // Update existing course
         const { error } = await supabase
           .from("courses")
           .update(dataToSubmit)
-          .eq("id", course.id!);
+          .eq("id", course.id);
 
         if (error) throw error;
       } else {
@@ -371,7 +355,6 @@ export default function CourseForm({ course }: CourseFormProps) {
       setIsSubmitting(false);
     }
   };
-
   // Component return remains the same...
   return (
     <Card className="bg-background">
@@ -384,19 +367,19 @@ export default function CourseForm({ course }: CourseFormProps) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">სათაური</Label>
             <Input
               id="title"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              placeholder="Enter course title"
+              placeholder="შეიყვანეთ კურსის სათაური"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Course Details (as array)</Label>
+            <Label>კურსის დეტალები</Label>
             <div className="space-y-3">
               {formData.course_details.map((detail, index) => (
                 <div key={index} className="flex gap-2">
@@ -405,7 +388,7 @@ export default function CourseForm({ course }: CourseFormProps) {
                     onChange={(e) =>
                       handleCourseDetailChange(index, e.target.value)
                     }
-                    placeholder="Enter course detail"
+                    placeholder="შეიყვანეთ კურსის დეტალი"
                   />
                   <Button
                     type="button"
@@ -424,40 +407,40 @@ export default function CourseForm({ course }: CourseFormProps) {
                 onClick={addCourseDetail}
                 className="flex items-center gap-2"
               >
-                <Plus size={16} /> Add Detail
+                <Plus size={16} /> დეტალის დამატება
               </Button>
               <p className="text-xs text-muted-foreground">
-                Each field represents one item in the course details array
+                თითოეული ველი წარმოადგენს დეტალების მასივის ერთ ელემენტს
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="lecturer">Lecturer</Label>
+              <Label htmlFor="lecturer">ლექტორი</Label>
               <Input
                 id="lecturer"
                 name="lecturer"
                 value={formData.lecturer}
                 onChange={handleChange}
-                placeholder="Enter lecturer name"
+                placeholder="შეიყვანეთ ლექტორის სახელი"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lecturer_details">Lecturer Details</Label>
+              <Label htmlFor="lecturer_details">ლექტორის დეტალები</Label>
               <Input
                 id="lecturer_details"
                 name="lecturer_details"
                 value={formData.lecturer_details}
                 onChange={handleChange}
-                placeholder="Enter lecturer details"
+                placeholder="შეიყვანეთ ლექტორის დეტალები"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
+              <Label htmlFor="price">ფასი</Label>
               <Input
                 id="price"
                 name="price"
@@ -465,11 +448,11 @@ export default function CourseForm({ course }: CourseFormProps) {
                 min="0"
                 value={formData.price}
                 onChange={handleNumericChange}
-                placeholder="Enter price"
+                placeholder="შეიყვანეთ ფასი"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="oldprice">Old Price</Label>
+              <Label htmlFor="oldprice">ძველი ფასი</Label>
               <Input
                 id="oldprice"
                 name="oldprice"
@@ -477,13 +460,13 @@ export default function CourseForm({ course }: CourseFormProps) {
                 min="0"
                 value={formData.oldprice}
                 onChange={handleNumericChange}
-                placeholder="Enter old price (if applicable)"
+                placeholder="შეიყვანეთ ძველი ფასი (არჩევითი)"
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="image">Course Image</Label>
+            <Label htmlFor="image">კურსის სურათი</Label>
             <div className="flex flex-col gap-4">
               <div className="flex gap-2">
                 <Button
@@ -494,7 +477,7 @@ export default function CourseForm({ course }: CourseFormProps) {
                   className="flex items-center gap-2 w-full md:w-auto"
                 >
                   <Upload size={16} />
-                  {isUploading ? "Uploading..." : "Upload Image"}
+                  {isUploading ? "იტვირთება..." : "სურათის ატვირთვა"}
                 </Button>
                 <input
                   type="file"
@@ -534,9 +517,9 @@ export default function CourseForm({ course }: CourseFormProps) {
                 <div className="w-full max-w-md h-60 rounded-md overflow-hidden bg-muted flex items-center justify-center border border-dashed border-muted-foreground/50">
                   <div className="text-muted-foreground flex flex-col items-center p-6">
                     <ImageIcon size={48} strokeWidth={1} />
-                    <span className="text-sm mt-4">No image selected</span>
+                    <span className="text-sm mt-4">სურათი არ არის არჩეული</span>
                     <span className="text-xs mt-2">
-                      Click upload to add an image
+                      დააჭირეთ ატვირთვას სურათის დასამატებლად
                     </span>
                   </div>
                 </div>
@@ -545,7 +528,7 @@ export default function CourseForm({ course }: CourseFormProps) {
           </div>
 
           <div className="space-y-4">
-            <Label htmlFor="courseIcon">Course Icon</Label>
+            <Label htmlFor="courseIcon">კურსის ხატულა</Label>
             <div className="flex flex-col gap-4">
               <div className="flex gap-2">
                 <Button
@@ -556,7 +539,7 @@ export default function CourseForm({ course }: CourseFormProps) {
                   className="flex items-center gap-2 w-full md:w-auto"
                 >
                   <Upload size={16} />
-                  {isIconUploading ? "Uploading..." : "Upload Icon"}
+                  {isIconUploading ? "იტვირთება..." : "ხატულის ატვირთვა"}
                 </Button>
                 <input
                   type="file"
@@ -600,9 +583,9 @@ export default function CourseForm({ course }: CourseFormProps) {
                 <div className="w-full max-w-md h-60 rounded-md overflow-hidden bg-muted flex items-center justify-center border border-dashed border-muted-foreground/50">
                   <div className="text-muted-foreground flex flex-col items-center p-6">
                     <FileIcon size={48} strokeWidth={1} />
-                    <span className="text-sm mt-4">No icon selected</span>
+                    <span className="text-sm mt-4">ხატულა არ არის არჩეული</span>
                     <span className="text-xs mt-2">
-                      Click upload to add an icon image
+                      დააჭირეთ ატვირთვას ხატულის დასამატებლად
                     </span>
                   </div>
                 </div>
@@ -613,14 +596,14 @@ export default function CourseForm({ course }: CourseFormProps) {
           {/* Syllabus Section */}
           <div className="space-y-4 border p-4 rounded-md">
             <div className="flex justify-between items-center">
-              <Label>Syllabus Sections</Label>
+              <Label>სილაბუსის სექციები</Label>
               <Button
                 type="button"
                 variant="outline"
                 onClick={addSyllabusSection}
                 className="flex items-center gap-2"
               >
-                <Plus size={16} /> Add Section
+                <Plus size={16} /> სექციის დამატება
               </Button>
             </div>
             {formData.syllabus_title.map((title, titleIndex) => (
@@ -634,7 +617,7 @@ export default function CourseForm({ course }: CourseFormProps) {
                     onChange={(e) =>
                       handleSyllabusTitleChange(titleIndex, e.target.value)
                     }
-                    placeholder="Enter section title"
+                    placeholder="შეიყვანეთ სექციის სათაური"
                     className="font-medium"
                   />
                   <Button
@@ -648,7 +631,7 @@ export default function CourseForm({ course }: CourseFormProps) {
                   </Button>
                 </div>
                 <div className="pl-4 border-l ml-2 space-y-2">
-                  <Label className="text-sm">Content Items</Label>
+                  <Label className="text-sm">კონტენტის ელემენტები</Label>
                   {formData.syllabus_content[titleIndex]?.map(
                     (content, contentIndex) => (
                       <div key={contentIndex} className="flex gap-2">
@@ -661,7 +644,7 @@ export default function CourseForm({ course }: CourseFormProps) {
                               e.target.value
                             )
                           }
-                          placeholder="Enter content item"
+                          placeholder="შეიყვანეთ კონტენტის ელემენტი"
                           className="text-sm"
                         />
                         <Button
@@ -685,31 +668,31 @@ export default function CourseForm({ course }: CourseFormProps) {
                     onClick={() => addSyllabusContentItem(titleIndex)}
                     className="flex items-center gap-1 mt-2"
                   >
-                    <Plus size={14} /> Add Item
+                    <Plus size={14} /> ელემენტის დამატება
                   </Button>
                 </div>
               </div>
             ))}
             <p className="text-xs text-muted-foreground">
-              Each section creates a title in syllabus_title and corresponding
-              content items in syllabus_content.
+              თითოეული სექცია შექმნის სილაბუსის სათაურს და შესაბამის კონტენტებს
+              სილაბუსის მასივში
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="start_course">Start Date</Label>
+              <Label htmlFor="start_course">დაწყების თარიღი</Label>
               <Input
                 id="start_course"
                 name="start_course"
                 type="text"
                 value={formData.start_course || ""}
                 onChange={handleChange}
-                placeholder="Enter start date"
+                placeholder="შეიყვანეთ დაწყების თარიღი"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="quantity_lessons">Number of Lessons</Label>
+              <Label htmlFor="quantity_lessons">გაკვეთილების რაოდენობა</Label>
               <Input
                 id="quantity_lessons"
                 name="quantity_lessons"
@@ -717,24 +700,26 @@ export default function CourseForm({ course }: CourseFormProps) {
                 min="0"
                 value={formData.quantity_lessons || 0}
                 onChange={handleNumericChange}
-                placeholder="Enter number of lessons"
+                placeholder="შეიყვანეთ გაკვეთილების რაოდენობა"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="quantity_of_students">Class Size</Label>
+              <Label htmlFor="quantity_of_students">ჯგუფის ზომა</Label>
               <Input
                 id="quantity_of_students"
                 name="quantity_of_students"
                 value={formData.quantity_of_students || ""}
                 onChange={handleChange}
-                placeholder="e.g. 5-10 students"
+                placeholder="მაგ. 5-10 სტუდენტი"
               />
               <p className="text-xs text-muted-foreground">
-                Enter class size as a text description
+                შეიყვანეთ ჯგუფის ზომა ტექსტური აღწერის სახით
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lesson_time">Lesson Duration (minutes)</Label>
+              <Label htmlFor="lesson_time">
+                გაკვეთილის ხანგრძლივობა (წუთები)
+              </Label>
               <Input
                 id="lesson_time"
                 name="lesson_time"
@@ -742,7 +727,7 @@ export default function CourseForm({ course }: CourseFormProps) {
                 min="0"
                 value={formData.lesson_time || 0}
                 onChange={handleNumericChange}
-                placeholder="Enter lesson duration"
+                placeholder="შეიყვანეთ გაკვეთილის ხანგრძლივობა"
               />
             </div>
           </div>
@@ -750,17 +735,17 @@ export default function CourseForm({ course }: CourseFormProps) {
           <div className="flex gap-4 pt-6">
             <Button type="submit" disabled={isSubmitting} className="px-8">
               {isSubmitting
-                ? "Saving..."
+                ? "იტვირთება..."
                 : course
-                  ? "Update Course"
-                  : "Create Course"}
+                  ? "კურსის განახლება"
+                  : "კურსის შექმნა"}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push("/dashboard/courses")}
             >
-              Cancel
+              გაუქმება
             </Button>
           </div>
         </form>

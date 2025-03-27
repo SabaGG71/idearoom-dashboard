@@ -79,7 +79,7 @@ export default function BlogsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        იტვირთება...
       </div>
     );
   }
@@ -89,14 +89,14 @@ export default function BlogsPage() {
       <DashboardNavbar handleLogOut={handleLogout} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Blog Management</h1>
+          <h1 className="text-2xl font-bold">ბლოგების მართვა</h1>
           <Button asChild>
             <Link
               href="/dashboard/blogs/new"
               className="flex items-center gap-2"
             >
               <PlusCircle size={16} />
-              New Blog Post
+              ახალი ბლოგი
             </Link>
           </Button>
         </div>
